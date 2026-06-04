@@ -28,14 +28,16 @@ jobs:
 
       - name: Import local PINECRAFT source archive
         env:
-          SOURCE_ARCHIVE_URL: https://bf61abffdc49b8.lhr.life/pinecraft-source.tar.gz
+          SOURCE_ARCHIVE_URL: https://c023f8a2424c89.lhr.life/pinecraft-source-clean.tar.gz
         run: |
           set -euxo pipefail
           curl -fL --retry 10 --retry-delay 2 "$SOURCE_ARCHIVE_URL" -o /tmp/pinecraft-source.tar.gz
+          rm -rf /tmp/pinecraft-source
           mkdir -p /tmp/pinecraft-source
           tar -xzf /tmp/pinecraft-source.tar.gz -C /tmp/pinecraft-source
           find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -a /tmp/pinecraft-source/. .
+          rm -rf .github/workflows
           git status --short
 
       - name: Commit imported source
@@ -45,7 +47,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Import PINECRAFT source" || echo "No source changes to commit"
-          git push || echo "Push skipped or already up to date"
+          git push
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -61,6 +63,8 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
